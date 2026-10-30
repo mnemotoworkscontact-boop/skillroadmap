@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>スキルロードマップ</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: 左に経験入力、右にスキル抽出とキャリア路線。各大分類を路線カラーで色分けする。 */
+:root{
+  --bg:#EEF1F4; --surface:#FFFFFF; --surface-2:#F5F7F9; --fg:#14202A; --muted:#566471; --line:#D3DAE1;
+  --ink:#14202A; --ink-on:#FFFFFF; --focus:#2563EB; --good:#0F766E; --gap:#B45309;
+  --c0:#C2410C; --c1:#2563EB; --c2:#7C3AED; --c3:#4D7C0F; --c4:#6B645E; --c5:#DB2777; --c6:#A16207; --c7:#0F766E;
+  --font-display:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",Meiryo,sans-serif;
+  --font-body:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",Meiryo,sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E151B; --surface:#16202A; --surface-2:#1B2733; --fg:#E6ECF1; --muted:#9AA8B4; --line:#2B3946;
+    --ink:#E6ECF1; --ink-on:#0E151B; --focus:#60A5FA; --good:#2DD4BF; --gap:#FBBF24;
+    --c0:#FB923C; --c1:#60A5FA; --c2:#A78BFA; --c3:#84CC16; --c4:#A8A29E; --c5:#F472B6; --c6:#FBBF24; --c7:#2DD4BF;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E151B; --surface:#16202A; --surface-2:#1B2733; --fg:#E6ECF1; --muted:#9AA8B4; --line:#2B3946;
+  --ink:#E6ECF1; --ink-on:#0E151B; --focus:#60A5FA; --good:#2DD4BF; --gap:#FBBF24;
+  --c0:#FB923C; --c1:#60A5FA; --c2:#A78BFA; --c3:#84CC16; --c4:#A8A29E; --c5:#F472B6; --c6:#FBBF24; --c7:#2DD4BF;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:15px;line-height:1.7;
+  padding-block:28px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3,h4,p,ul,ol{margin:0}
+ul,ol{padding:0;list-style:none}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.app{max-width:1120px;margin:0 auto;display:grid;gap:28px;grid-template-columns:minmax(0,1fr)}
+.head{display:grid;gap:6px}
+.head h1{font-family:var(--font-display);font-weight:700;font-size:clamp(24px,4vw,32px);line-height:1.3;letter-spacing:.01em}
+.head p{color:var(--muted);max-width:60ch}
+.badge{display:inline-block;font-family:var(--font-mono);font-size:12px;padding:1px 8px;border:1px solid var(--line);border-radius:4px;color:var(--muted);background:var(--surface)}
+@media (min-width:960px){
+  .app{grid-template-columns:360px minmax(0,1fr);align-items:start}
+  .head{grid-column:1/-1}
+  .side{position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto}
+}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px;display:grid;gap:14px;min-width:0}
+.panel h2{font-size:17px;font-weight:700;display:flex;gap:10px;align-items:baseline;justify-content:space-between;flex-wrap:wrap}
+.panel h2 small{font-family:var(--font-mono);font-weight:400;font-size:12px;color:var(--muted)}
+.hint{font-size:13px;color:var(--muted)}
+.rows{display:grid;gap:12px}
+.row{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center}
+.row .job{flex:1 1 170px;min-width:0;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2)}
+.row select{padding:8px 6px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2)}
+.row .del{border:1px solid var(--line);background:transparent;border-radius:6px;width:34px;height:36px;cursor:pointer;color:var(--muted)}
+.row .del:hover{color:var(--fg);border-color:var(--fg)}
+.row .meta{flex:1 0 100%;font-size:12px;color:var(--muted);display:flex;gap:6px;align-items:center;min-height:18px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--dc,var(--line));flex:none}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:7px 12px;cursor:pointer;font-size:13px}
+.btn:hover{border-color:var(--fg)}
+.btn.primary{background:var(--ink);color:var(--ink-on);border-color:var(--ink)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.sep{border:0;border-top:1px solid var(--line);margin:0}
+.field{display:grid;gap:6px}
+.field label{font-size:13px;font-weight:700}
+.field input{padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2);min-width:0}
+.main{display:grid;gap:20px;min-width:0}
+.cat{display:grid;gap:8px;padding-left:12px;border-left:4px solid var(--cc)}
+.cat h3{font-size:13px;font-weight:700;color:var(--cc)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.sk{display:inline-flex;gap:8px;align-items:center;padding:3px 10px;border:1px solid color-mix(in srgb,var(--cc) 40%,var(--line));background:color-mix(in srgb,var(--cc) 9%,var(--surface));border-radius:6px;cursor:pointer;font-size:14px}
+.sk[aria-pressed="true"]{outline:2px solid var(--cc);outline-offset:1px}
+.lv{display:inline-flex;gap:2px}
+.lv i{width:5px;height:12px;border-radius:1px;background:color-mix(in srgb,var(--cc) 22%,var(--surface))}
+.lv i.on{background:var(--cc)}
+.ev{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:grid;gap:8px}
+.ev h3{font-size:15px}
+.ev p{font-size:13px;color:var(--muted)}
+.ev li{font-size:13px;display:flex;flex-wrap:wrap;gap:2px 8px}
+.ev li b{font-weight:700}
+.ev li span{color:var(--muted)}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.f{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:3px 12px;font-size:13px;cursor:pointer}
+.f[aria-pressed="true"]{background:var(--ink);color:var(--ink-on);border-color:var(--ink)}
+.tier{display:grid;gap:12px}
+.tier>h3{font-size:15px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.tier>h3 small{font-weight:400;color:var(--muted);font-size:13px}
+.cards{display:grid;gap:12px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:1240px){.cards{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+.path{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px;display:grid;gap:10px;min-width:0;align-content:start}
+.path header{display:flex;gap:12px;justify-content:space-between;align-items:flex-start}
+.path h4{font-size:17px;line-height:1.4;font-weight:700}
+.path .grp{font-size:12px;color:var(--muted)}
+.pct{font-family:var(--font-display);font-weight:700;font-size:28px;line-height:1;color:var(--lc);white-space:nowrap}
+.pct small{font-family:var(--font-body);font-size:11px;color:var(--muted);margin-left:2px}
+.route{display:flex;flex-wrap:wrap;gap:4px 0;align-items:center;font-size:13px}
+.st{display:inline-flex;align-items:center;gap:6px}
+.st .p{width:12px;height:12px;border-radius:50%;border:3px solid var(--lc);background:var(--surface);flex:none}
+.st.goal .p{background:var(--lc)}
+.st+.st::before{content:"";width:22px;height:4px;background:var(--lc);margin:0 6px;flex:none}
+.meter{height:6px;border-radius:3px;background:color-mix(in srgb,var(--lc) 18%,var(--surface-2));overflow:hidden}
+.meter span{display:block;height:100%;background:var(--lc)}
+.two{display:grid;gap:10px;grid-template-columns:minmax(0,1fr)}
+.blk h5{margin:0 0 4px;font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.04em}
+.mini{display:flex;flex-wrap:wrap;gap:4px}
+.mini span{font-size:12px;padding:1px 8px;border-radius:4px;background:color-mix(in srgb,var(--good) 12%,var(--surface));border:1px solid color-mix(in srgb,var(--good) 35%,var(--line))}
+.gaps li{font-size:13px;display:flex;flex-wrap:wrap;gap:0 8px;padding:3px 0;border-top:1px dashed var(--line)}
+.gaps li:first-child{border-top:0}
+.gaps li b{color:var(--gap);font-weight:700}
+.gaps li span{color:var(--muted)}
+.more{font-size:12px;color:var(--muted)}
+.side-note{font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px}
+.lateral{font-size:13px;color:var(--muted)}
+.empty{padding:20px;border:1px dashed var(--line);border-radius:8px;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){.meter span{transition:width .3s ease}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="head">
+    <h1>スキルロードマップ</h1>
+    <p>これまでの経験職種から身についたスキルを割り出し、そのスキルで進めるキャリアの道を示します。<span class="badge" id="exbadge" hidden>入力例を表示中</span></p>
+  </header>
+
+  <aside class="side">
+    <section class="panel" aria-labelledby="in-h">
+      <h2 id="in-h">経験職種 <small id="cnt">0/10</small></h2>
+      <p class="hint">職種名を入力して候補から選び、経験年数を選びます。最大10職種です。</p>
+      <div class="rows" id="rows"></div>
+      <div class="btns">
+        <button class="btn primary" id="add" type="button">職種を追加</button>
+        <button class="btn" id="clear" type="button">全部消す</button>
+      </div>
+      <hr class="sep">
+      <div class="hint">入力例</div>
+      <div class="btns">
+        <button class="btn" data-preset="0" type="button">営業 + DX</button>
+        <button class="btn" data-preset="1" type="button">コールセンター</button>
+        <button class="btn" data-preset="2" type="button">事務 + 経理</button>
+      </div>
+      <hr class="sep">
+      <div class="field">
+        <label for="target">気になる職種を直接調べる</label>
+        <input id="target" list="jobs" placeholder="例: DXコンサルタント" autocomplete="off">
+      </div>
+      <p class="side-note">スキルは職種と経験年数からの推定です。実際の習熟度は担当した仕事の内容や頻度で変わります。</p>
+    </section>
+  </aside>
+
+  <main class="main" id="out" aria-live="polite"></main>
+</div>
+<datalist id="jobs"></datalist>
+
+<script id="core">
+const CATS=["創造・企画系","分析・調査系","設計・構築系","管理・運営系","遂行・実務系","対人・支援系","営業・交渉系","統率・意思決定系"];
+const SK=`S001|発想力|新しいアイデアを生み出す
+S002|構想力|複数の要素から全体像を組み立てる
+S003|課題設定力|解決すべき課題を明確にする
+S004|企画構成力|アイデアを実行可能な企画にまとめる
+S005|ニーズ把握力|相手や市場の要求を把握する
+S006|価値創造力|新しい価値やメリットを生み出す
+S007|表現力|情報や考えを適切に表現する
+S008|編集力|情報を整理し、伝わる形に構成する
+S009|問題発見力|現状から問題点を発見する
+S010|改善提案力|問題に対する改善策を提案する
+S011|情報収集力|必要な情報を集める
+S012|情報評価力|情報の正確性や信頼性を判断する
+S013|数値分析力|数値を集計・比較・分析する
+S014|傾向把握力|データや事象の傾向を読み取る
+S015|業務理解力|業務の目的や流れを理解する
+S016|原因分析力|問題が発生した原因を特定する
+S017|仮説構築力|情報から仮説を立てる
+S018|検証力|仮説や施策の妥当性を確認する
+S019|評価力|基準に照らして状態や成果を評価する
+S020|予測力|情報から将来の変化を予測する
+S021|要望把握力|相手の希望や要求を把握する
+S022|要件整理力|要望を具体的な条件に整理する
+S023|業務設計力|業務の手順や仕組みを設計する
+S024|構造化力|複雑な情報を構造的に整理する
+S025|仕様設計力|必要な機能や仕様を設計する
+S026|技術的構想力|技術を使った実現方法を考える
+S027|実装力|設計や計画を具体的な形にする
+S028|検証・テスト力|成果物の動作や品質を検証する
+S029|効率化能力|作業や業務の無駄を減らす
+S030|最適化能力|条件に応じて最も適切な構造に改善する
+S031|進捗管理力|予定と実績を把握し管理する
+S032|状況対応力|状況の変化に応じて対応する
+S033|資源管理力|人・物・金・時間などを管理する
+S034|配分判断力|限られた資源を適切に配分する
+S035|品質管理力|成果物や業務の品質を維持する
+S036|再発防止力|問題の再発を防ぐ仕組みを作る
+S037|業務遂行力|必要な業務を着実に進める
+S038|業務調整力|業務量や進め方を調整する
+S039|リスク察知力|問題や危険の兆候を察知する
+S040|リスク対応力|リスク発生時に適切に対応する
+S041|定型業務処理力|定められた手順に沿って処理する
+S042|正確性|ミスを抑えて正確に作業する
+S043|照合力|複数の情報を照らし合わせる
+S044|注意力|小さな違いや変化に気づく
+S045|作業遂行力|必要な作業を実行する
+S046|作業品質維持力|作業品質を安定して保つ
+S047|処理対応力|依頼や案件を適切に処理する
+S048|マルチタスク能力|複数の業務を並行して進める
+S049|現場把握力|現場の状況や実態を把握する
+S050|実践的対応力|現場の状況に応じて行動する
+S051|傾聴力|相手の話を注意深く聞く
+S052|質問力|質問によって必要な情報を引き出す
+S053|理解度把握力|相手がどの程度理解しているか把握する
+S054|説明力|情報や考えを分かりやすく伝える
+S055|指導力|相手の行動や能力の向上を支援する
+S056|育成計画力|人材の成長に向けた計画を立てる
+S057|成長支援力|相手の成長を継続的に支援する
+S058|課題整理力|相手の問題や悩みを整理する
+S059|解決策提案力|問題に対する解決策を提示する
+S060|関係構築力|相手との信頼関係を築く
+S061|共感力|相手の感情や立場を理解する
+S062|開拓力|新しい顧客や市場を開拓する
+S063|アプローチ力|相手との接点を作る
+S064|顧客課題把握力|顧客が抱える課題を把握する
+S065|提案力|相手に適した解決策を提案する
+S066|販売説明力|商品やサービスの価値を説明する
+S067|クロージング力|相手の意思決定を促す
+S068|交渉理解力|相手の条件や意向を理解する
+S069|合意形成力|異なる意見の間で合意点を見つける
+S070|意見調整力|関係者間の意見を整理・調整する
+S071|利害調整力|異なる利害関係を調整する
+S072|判断材料整理力|意思決定に必要な情報を整理する
+S073|意思決定力|状況を踏まえて決断する
+S074|目標設定力|目的に応じた目標を設定する
+S075|統率力|集団をまとめ、方向性を示す
+S076|全体設計力|全体の計画や構造を組み立てる
+S077|推進力|関係者を巻き込み物事を前進させる
+S078|人員配置力|適性や状況に応じて人員を配置する
+S079|人材評価力|人材の能力や成果を評価する
+S080|変革構想力|組織や業務を変える構想を立てる
+S081|変革実行力|変革を具体的な行動に移す`;
+const TK=`T001|アイデア創出|新しい案を考える:S001;既存情報を組み合わせる:S002
+T002|企画立案|目的と課題を整理する:S003;実現方法を考える:S002;企画内容を具体化する:S004
+T003|商品・サービス開発|利用者のニーズを把握する:S005;新しい価値を設計する:S006
+T004|コンテンツ制作|情報を文章や図にまとめる:S007;相手に伝わる形に編集する:S008
+T005|業務改善企画|現状の問題点を見つける:S009;改善方法を考える:S010
+T006|情報収集|必要な情報を探す:S011;情報の信頼性を確認する:S012
+T007|データ分析|数値を集計・比較する:S013;数値の傾向を読み取る:S014
+T008|業務分析|業務の流れを把握する:S015;問題の発生原因を探る:S016
+T009|仮説検証|仮説を立てる:S017;仮説と結果を比較する:S018
+T010|評価・診断|基準に沿って状態を判断する:S019;将来の変化を予測する:S020
+T011|要件定義|要望を聞き取る:S021;必要条件を整理する:S022
+T012|業務設計|業務手順を組み立てる:S023;作業の順序や役割を決める:S024
+T013|システム設計|システムの仕様を決める:S025;技術的な実現方法を考える:S026
+T014|制作・実装|設計内容を形にする:S027;動作や品質を確認する:S028
+T015|最適化設計|無駄や重複を見つける:S029;より良い構造に変更する:S030
+T016|進行管理|期限と進捗を確認する:S031;遅延に対処する:S032
+T017|資源管理|人員や予算を把握する:S033;優先順位を決めて配分する:S034
+T018|品質管理|成果物を確認する:S035;不具合の再発を防ぐ:S036
+T019|業務運営|日常業務を滞りなく進める:S037;状況に応じて業務を調整する:S038
+T020|リスク管理|問題の発生可能性を把握する:S039;問題発生時の対応を決める:S040
+T021|定型事務|決められた手順で処理する:S041;正確に作業を進める:S042
+T022|確認・照合|情報の一致を確認する:S043;小さな違いを見つける:S044
+T023|加工・製造|手順に沿って加工する:S045;品質を一定に保つ:S046
+T024|処理・対応|依頼や問い合わせを処理する:S047;複数の案件を順に処理する:S048
+T025|現場作業|現場の状況を確認する:S049;状況に合わせて作業する:S050
+T026|ヒアリング|相手の話を聞く:S051;質問して情報を引き出す:S052
+T027|教育・指導|相手の理解度を確認する:S053;相手に合わせて説明する:S054;改善点を伝えて成長を促す:S055
+T028|育成|成長課題を設定する:S056;成長状況を確認する:S057
+T029|問題解決支援|相手の困りごとを整理する:S058;解決策を提示する:S059
+T030|関係構築|相手との信頼関係を築く:S060;相手の感情や立場を理解する:S061
+T031|新規開拓|見込み顧客を探す:S062;接点を作る:S063
+T032|提案営業|顧客の課題を把握する:S064;解決策を組み立てて伝える:S065
+T033|販売|商品の価値を説明する:S066;購入を後押しする:S067
+T034|交渉|相手の条件や意向を把握する:S068;双方の合意点を探す:S069
+T035|社内外調整|関係者の意見を整理する:S070;利害の異なる相手と調整する:S071
+T036|方針決定|状況と選択肢を整理する:S072;方針を決める:S073
+T037|組織統率|目標を示す:S074;メンバーをまとめる:S075
+T038|プロジェクト統括|全体計画を組み立てる:S076;複数の関係者を動かす:S077
+T039|人材管理|人員配置を考える:S078;メンバーの能力を評価する:S079
+T040|変革推進|現状を変える必要性を示す:S080;変化を実行に移す:S081`;
+const SB=`0|発想|T001|商品開発担当、サービス開発担当、クリエイティブプランナー、広告プランナー、コピーライター、アートディレクター、ゲームプランナー
+0|企画|T002|商品企画、事業企画、経営企画、営業企画、マーケティングプランナー、イベントプランナー、販促企画、サービス企画
+0|表現|T004|グラフィックデザイナー、Webデザイナー、UI/UXデザイナー、映像クリエイター、動画編集者、ライター、コピーライター、イラストレーター、フォトグラファー
+0|編集|T004|編集者、Web編集者、コンテンツディレクター、出版編集者、メディアディレクター、コンテンツマーケター
+0|開発構想|T003|新規事業開発担当、事業開発（BizDev）、商品開発担当、サービス開発担当、R&D担当、研究開発職
+0|改善提案|T005|業務改善担当、DX推進担当、業務改善コンサルタント、経営コンサルタント、サービス改善担当、カスタマーエクスペリエンス担当
+1|情報収集|T006|市場調査担当、マーケティングリサーチャー、リサーチャー、競合調査担当、調査員、特許調査担当
+1|データ分析|T007|データアナリスト、データサイエンティスト、経営分析担当、営業分析担当、マーケティングアナリスト、Webアナリスト、BIアナリスト
+1|構造分析|T008|業務分析担当、ビジネスアナリスト、経営コンサルタント、DXコンサルタント、ITコンサルタント、業務プロセスアナリスト
+1|仮説検証|T009|研究員、商品開発担当、マーケティングリサーチャー、データサイエンティスト、品質改善担当、臨床開発モニター
+1|評価・診断|T010|品質管理担当、品質保証担当、内部監査担当、リスクアナリスト、人事評価担当、システム評価担当
+1|予測|T007,T010|需要予測担当、経営企画担当、財務アナリスト、金融アナリスト、データサイエンティスト、サプライチェーンアナリスト
+2|要件設計|T011|ITコンサルタント、システムエンジニア、システムアナリスト、業務設計担当、DXコンサルタント、プロダクトマネージャー
+2|構造設計|T012,T013|システムアーキテクト、業務設計担当、データベース設計者、ネットワーク設計者、建築設計士、業務プロセス設計担当
+2|技術構築|T013,T014|プログラマー、Webエンジニア、アプリケーションエンジニア、インフラエンジニア、ネットワークエンジニア、クラウドエンジニア、データエンジニア
+2|物理設計|T013|建築士、建築設計者、機械設計エンジニア、電気設計エンジニア、プロダクトデザイナー、設備設計者
+2|制作・実装|T014|Web制作者、フロントエンドエンジニア、アプリ開発者、Webデザイナー、映像制作スタッフ、CADオペレーター
+2|最適化設計|T015|DX推進担当、業務改善コンサルタント、生産技術職、工程設計担当、RPAエンジニア、業務自動化エンジニア
+3|進行管理|T016|プロジェクトマネージャー、プロジェクトコーディネーター、制作進行管理、施工管理、営業事務、PMO
+3|資源管理|T017|経理、財務、購買担当、在庫管理担当、物流管理担当、施設管理担当、人員配置担当
+3|品質管理|T018|品質管理担当、品質保証担当、検査担当、品質管理エンジニア、食品衛生管理者
+3|業務運営|T019|店舗マネージャー、店長、施設運営担当、ホテル支配人、事務局運営担当、コールセンターSV、営業所長
+3|リスク管理|T020|内部監査担当、コンプライアンス担当、法務担当、情報セキュリティ担当、安全管理者、リスク管理担当
+3|維持・保守|T019,T018|システム運用保守担当、インフラ運用担当、設備保全担当、ビルメンテナンス担当、サービスエンジニア、カスタマーサポート
+4|定型事務|T021|一般事務、営業事務、経理事務、人事事務、総務事務、医療事務、学校事務、貿易事務
+4|確認・照合|T022|データ入力担当、審査担当、検査担当、校正者、経理担当、品質検査員、書類審査担当
+4|加工・製造|T023|製造オペレーター、組立作業員、食品製造スタッフ、調理師、加工技術者、工場作業員
+4|処理・対応|T024|受発注担当、請求事務、給与計算担当、保険事務、審査事務、コールセンタースタッフ
+4|物流・移動|T024,T025|物流スタッフ、倉庫作業員、配送ドライバー、フォークリフトオペレーター、配達員、運行管理補助
+4|現場作業|T025|施工スタッフ、電気工事士、設備工事スタッフ、清掃スタッフ、メンテナンススタッフ、警備員
+5|ヒアリング|T026|キャリアアドバイザー、転職エージェント、カウンセラー、相談員、カスタマーサクセス、カスタマーサポート、営業職
+5|教育・指導|T027|日本語教員、学校教員、塾講師、家庭教師、企業研修講師、インストラクター、職業訓練指導員、社内教育担当
+5|育成|T028|人材開発担当、教育研修担当、人事担当、キャリアコンサルタント、OJT担当、組織開発コンサルタント
+5|ケア|T026,T030|看護師、介護士、保育士、社会福祉士、精神保健福祉士、生活相談員、医療ソーシャルワーカー
+5|問題解決支援|T029|DXコンサルタント、ITコンサルタント、経営コンサルタント、業務改善コンサルタント、キャリアコンサルタント、社労士
+5|関係構築|T030|カスタマーサクセス、アカウントマネージャー、顧客担当営業、コミュニティマネージャー、アライアンス担当、渉外担当
+6|開拓|T031|法人営業、個人営業、新規開拓営業、インサイドセールス、テレアポ営業、不動産営業、保険営業
+6|提案|T032|ソリューション営業、IT営業、DX営業、コンサルティング営業、企画営業、広告営業、提案型営業
+6|販売|T033|販売スタッフ、店舗販売員、アパレル販売員、家電販売員、自動車販売員、化粧品販売員、携帯電話販売員
+6|交渉|T034|法人営業、仕入れ担当、バイヤー、不動産営業、M&Aアドバイザー、調達担当、契約交渉担当
+6|調整|T035|営業アシスタント、営業事務、購買担当、プロジェクトコーディネーター、アライアンス担当、渉外担当
+6|広報・発信|T004,T030|広報担当、PRプランナー、広報ディレクター、広告営業、SNS運用担当、マーケティング担当、IR担当
+7|方針決定|T036|経営者、事業責任者、経営企画担当、事業企画担当、経営コンサルタント、事業開発責任者
+7|組織統率|T037|部門長、営業マネージャー、店舗マネージャー、コールセンターSV、工場長、支店長、チームリーダー
+7|意思決定|T036|経営者、事業責任者、部門マネージャー、プロダクトマネージャー、プロジェクトマネージャー
+7|プロジェクト統括|T038|プロジェクトマネージャー、PMO責任者、ITプロジェクトマネージャー、建設プロジェクトマネージャー、制作ディレクター
+7|人材管理|T039|人事マネージャー、採用責任者、人事企画担当、人材開発マネージャー、組織開発担当
+7|変革推進|T040|DX推進責任者、経営改革担当、組織開発コンサルタント、チェンジマネジメント担当、事業変革コンサルタント`;
+const EX=`DXコンサルタント|最適化設計,提案,調整
+コールセンターSV|育成,教育・指導
+日本語教員|ヒアリング,育成
+営業職|開拓,提案,交渉
+学校教員|育成
+塾講師|育成
+企業研修講師|育成
+人材紹介営業|ヒアリング,提案,交渉,開拓
+リクルーター|ヒアリング,開拓,調整
+採用コンサルタント|問題解決支援,提案
+RPO担当|調整,進行管理,開拓
+戦略コンサルタント|構造分析,方針決定,問題解決支援
+人事コンサルタント|問題解決支援,育成,構造分析
+SE|要件設計,技術構築,構造設計
+社内SE|要件設計,維持・保守,問題解決支援
+ITヘルプデスク|維持・保守,処理・対応
+プリセールス|提案,要件設計
+セキュリティエンジニア|リスク管理,技術構築
+Webマーケター|データ分析,広報・発信,企画
+SEO担当|データ分析,広報・発信
+広告運用担当|データ分析,広報・発信
+CRM担当|データ分析,関係構築
+マーケティングディレクター|企画,組織統率,方針決定
+ファイナンシャルプランナー|ヒアリング,提案,問題解決支援
+証券営業|開拓,提案,販売
+税理士|評価・診断,問題解決支援,資源管理
+公認会計士|評価・診断,リスク管理
+社会保険労務士|問題解決支援,定型事務,リスク管理
+行政書士|定型事務,問題解決支援,ヒアリング
+理学療法士|ケア,教育・指導
+作業療法士|ケア,教育・指導
+介護福祉士|ケア
+教育コーディネーター|調整,育成
+宅地建物取引士|提案,交渉,定型事務
+施工管理技士|進行管理,品質管理,リスク管理
+翻訳者|表現,確認・照合
+通訳者|ヒアリング,調整
+秘書|調整,定型事務,進行管理
+コンサルタント|問題解決支援,構造分析
+士業補助者|定型事務,確認・照合`;
+const GR=`人材・採用|人材紹介営業,キャリアアドバイザー,リクルーター,採用コンサルタント,RPO担当
+コンサルティング|DXコンサルタント,ITコンサルタント,業務改善コンサルタント,戦略コンサルタント,人事コンサルタント
+IT・デジタル|SE,プログラマー,社内SE,ITヘルプデスク,IT営業,プリセールス,セキュリティエンジニア
+マーケティング|Webマーケター,SEO担当,広告運用担当,CRM担当,マーケティングディレクター
+金融・専門職|ファイナンシャルプランナー,証券営業,税理士,公認会計士,社会保険労務士,行政書士
+医療・福祉|看護師,医療事務,理学療法士,作業療法士,介護福祉士,社会福祉士
+教育|日本語教員,学校教員,塾講師,研修講師,教育コーディネーター
+不動産・建設|不動産営業,宅地建物取引士,施工管理技士,建築士,施設管理担当
+専門サービス|翻訳者,通訳者,秘書,コンサルタント,士業補助者`;
+
+const YEARS=["1年未満","1〜3年","3〜5年","5〜10年","10年以上"];
+const YF=[0.4,0.7,0.9,1.1,1.3];
+const MAXJOBS=10;
+const TH=[0.7,0.45,0.25];
+
+const SKILLS={},TASKS={},SUBS=[],JOBS=new Map(),SUBBYNAME={};
+SK.split("\n").forEach(l=>{const [id,name,def]=l.split("|");SKILLS[id]={id,name,def,cat:null};});
+TK.split("\n").forEach(l=>{
+  const [id,name,acts]=l.split("|");
+  const cat=Math.floor((parseInt(id.slice(1),10)-1)/5);
+  const actions=acts.split(";").map(a=>{const [text,skill]=a.split(":");return {text,skill};});
+  TASKS[id]={id,name,cat,actions};
+  actions.forEach(a=>{if(SKILLS[a.skill].cat===null)SKILLS[a.skill].cat=cat;});
+});
+function addJob(name,subIdx){
+  let j=JOBS.get(name);
+  if(!j){j={name,subs:new Set(),group:"",cat:SUBS[subIdx].cat};JOBS.set(name,j);}
+  j.subs.add(subIdx);
+}
+SB.split("\n").forEach((l,i)=>{
+  const [cat,name,tasks,jobs]=l.split("|");
+  SUBS.push({id:i,cat:+cat,name,tasks:tasks.split(","),jobs:jobs.split("、")});
+  SUBBYNAME[name]=i;
+});
+SUBS.forEach(s=>s.jobs.forEach(n=>addJob(n,s.id)));
+EX.split("\n").forEach(l=>{const [n,subs]=l.split("|");subs.split(",").forEach(sn=>addJob(n,SUBBYNAME[sn]));});
+GR.split("\n").forEach(l=>{const [g,names]=l.split("|");names.split(",").forEach(n=>{const j=JOBS.get(n);if(j)j.group=g;});});
+const JOBNAMES=[...JOBS.keys()];
+
+const reqCache=new Map();
+function reqOf(name){
+  if(reqCache.has(name))return reqCache.get(name);
+  const j=JOBS.get(name),m=new Map();
+  j.subs.forEach(si=>{
+    const sb=SUBS[si],seen=new Set();
+    sb.tasks.forEach(tid=>{
+      const t=TASKS[tid];
+      t.actions.forEach(a=>{
+        let e=m.get(a.skill);
+        if(!e){e={w:0,paths:[]};m.set(a.skill,e);}
+        if(!seen.has(a.skill)){seen.add(a.skill);e.w++;}
+        e.paths.push({sub:sb.name,task:t.name,action:a.text});
+      });
+    });
+  });
+  reqCache.set(name,m);
+  return m;
+}
+function sigOf(name){return [...JOBS.get(name).subs].sort((a,b)=>a-b).join(",");}
+function lvl(r){return r<0.5?1:r<0.9?2:r<1.4?3:r<2.0?4:5;}
+function have(r){return Math.min(1,(r||0)/0.9);}
+
+function analyze(entries){
+  const uniq=new Map();
+  entries.forEach(e=>{if(JOBS.has(e.job)){const o=uniq.get(e.job);if(!o||e.y>o.y)uniq.set(e.job,{job:e.job,y:e.y});}});
+  const raw=new Map(),ev=new Map(),byJob=new Map();
+  uniq.forEach(e=>{
+    const req=reqOf(e.job);
+    byJob.set(e.job,{y:e.y,req});
+    req.forEach((v,s)=>{
+      const c=YF[e.y]*(1+0.25*Math.min(2,v.w-1));
+      raw.set(s,(raw.get(s)||0)+c);
+      if(!ev.has(s))ev.set(s,[]);
+      v.paths.slice(0,3).forEach(p=>ev.get(s).push({job:e.job,y:e.y,sub:p.sub,task:p.task,action:p.action}));
+    });
+  });
+  const list=[...raw.entries()].map(([id,r])=>({id,raw:r,lv:lvl(r)})).sort((a,b)=>b.raw-a.raw);
+  return {list,raw,ev,byJob,jobs:[...uniq.keys()]};
+}
+function evalJob(an,name){
+  const req=reqOf(name),j=JOBS.get(name);
+  let tw=0,hw=0;
+  const gaps=[],strengths=[];
+  req.forEach((v,s)=>{
+    tw+=v.w;
+    const h=have(an.raw.get(s));
+    hw+=v.w*h;
+    if(h<0.6)gaps.push({id:s,w:v.w,path:v.paths[0],h});
+    else strengths.push({id:s,w:v.w,h});
+  });
+  gaps.sort((a,b)=>b.w-a.w||a.h-b.h);
+  strengths.sort((a,b)=>b.w-a.w);
+  const from=[];
+  an.byJob.forEach((o,jn)=>{
+    let n=0;req.forEach((v,s)=>{if(o.req.has(s))n++;});
+    if(n>0)from.push({job:jn,n});
+  });
+  from.sort((a,b)=>b.n-a.n);
+  const strong=from.filter(f=>f.n>=2).slice(0,3);
+  return {name,cat:j.cat,group:j.group,cov:tw?hw/tw:0,gaps,strengths,from:(strong.length?strong:from.slice(0,1))};
+}
+function recommend(an,catFilter){
+  const owned=new Set(an.jobs),groups=new Map();
+  JOBNAMES.forEach(n=>{const s=sigOf(n);if(!groups.has(s))groups.set(s,[]);groups.get(s).push(n);});
+  const tiers=[[],[],[]],lateral=[];
+  groups.forEach(names=>{
+    const free=names.filter(n=>!owned.has(n));
+    if(!free.length)return;
+    const it=evalJob(an,free[0]);
+    it.same=free.slice(1);
+    if(it.gaps.length===0){free.forEach(n=>lateral.push(n));return;}
+    if(catFilter>=0&&it.cat!==catFilter)return;
+    if(it.cov>=TH[0])tiers[0].push(it);
+    else if(it.cov>=TH[1])tiers[1].push(it);
+    else if(it.cov>=TH[2])tiers[2].push(it);
+  });
+  tiers.forEach(t=>t.sort((a,b)=>b.cov-a.cov||b.gaps.length-a.gaps.length));
+  return {tiers,lateral};
+}
+</script>
+
+<script id="ui">
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const PRESETS=[
+  [["営業職",3],["DX営業",2],["DX推進担当",1]],
+  [["コールセンタースタッフ",2],["コールセンターSV",2],["カスタマーサポート",2]],
+  [["一般事務",3],["経理事務",2],["営業事務",1]]
+];
+const STORE="skill-route-map-v1";
+const state={rows:[],filter:-1,target:"",sel:null,open:{},example:true};
+
+function load(){
+  try{
+    const s=JSON.parse(localStorage.getItem(STORE)||"null");
+    if(s&&Array.isArray(s.rows)&&s.rows.length){
+      state.rows=s.rows.slice(0,MAXJOBS).map(r=>({job:String(r.job||""),y:Math.min(4,Math.max(0,+r.y||0))}));
+      state.filter=typeof s.filter==="number"?s.filter:-1;
+      state.target=String(s.target||"");
+      state.example=false;
+      return;
+    }
+  }catch(e){}
+  setPreset(0);
+}
+function save(){
+  try{localStorage.setItem(STORE,JSON.stringify({rows:state.rows,filter:state.filter,target:state.target}));}catch(e){}
+}
+function setPreset(i){
+  state.rows=PRESETS[i].map(([job,y])=>({job,y}));
+  state.example=true;state.sel=null;state.open={};
+}
+function rowHtml(r,i){
+  const opts=YEARS.map((t,k)=>`<option value="${k}"${k===r.y?" selected":""}>${t}</option>`).join("");
+  return `<div class="row" data-i="${i}">
+    <input class="job" id="job${i}" list="jobs" value="${esc(r.job)}" placeholder="職種を入力" aria-label="経験職種 ${i+1}" autocomplete="off">
+    <select id="yr${i}" aria-label="経験年数 ${i+1}">${opts}</select>
+    <button class="del" type="button" aria-label="この職種を消す">×</button>
+    <div class="meta"></div></div>`;
+}
+function buildRows(){
+  $("#rows").innerHTML=state.rows.map(rowHtml).join("");
+  $("#add").disabled=state.rows.length>=MAXJOBS;
+  $("#cnt").textContent=state.rows.length+"/"+MAXJOBS;
+  refreshMeta();
+}
+function refreshMeta(){
+  document.querySelectorAll("#rows .row").forEach(el=>{
+    const r=state.rows[+el.dataset.i],m=el.querySelector(".meta"),j=JOBS.get(r.job);
+    if(j){
+      const subs=[...j.subs].slice(0,4).map(si=>SUBS[si].name).join("・");
+      m.style.setProperty("--dc","var(--c"+j.cat+")");
+      m.innerHTML=`<span class="dot"></span><span>${esc(CATS[j.cat])} ／ ${esc(subs)}</span>`;
+    }else{
+      m.style.removeProperty("--dc");
+      m.textContent=r.job?"候補にない職種名です。近い職種を候補から選んでください。":"";
+    }
+  });
+}
+function lvDots(n){let h="";for(let i=1;i<=5;i++)h+=`<i class="${i<=n?"on":""}"></i>`;return `<span class="lv" aria-hidden="true">${h}</span>`;}
+
+function skillsHtml(an){
+  const byCat=[...Array(8)].map(()=>[]);
+  an.list.forEach(s=>byCat[SKILLS[s.id].cat].push(s));
+  const groups=byCat.map((arr,c)=>arr.length?`<div class="cat" style="--cc:var(--c${c})"><h3>${CATS[c]}</h3><div class="chips">${
+    arr.map(s=>`<button type="button" class="sk" data-sk="${s.id}" aria-pressed="${state.sel===s.id}">${esc(SKILLS[s.id].name)}${lvDots(s.lv)}</button>`).join("")
+  }</div></div>`:"").join("");
+  return `<section class="panel" aria-labelledby="sk-h">
+    <h2 id="sk-h">抽出されたスキル <small>${an.list.length}個 ／ 経験職種 ${an.jobs.length}</small></h2>
+    <p class="hint">色は職務の系統、棒の数は経験の厚み（職種と年数からの推定）です。スキルを押すと根拠が見られます。</p>
+    ${groups}
+    <div class="ev" id="ev">${evHtml(an)}</div></section>`;
+}
+function evHtml(an){
+  const id=state.sel&&an.raw.has(state.sel)?state.sel:(an.list[0]&&an.list[0].id);
+  if(!id)return "";
+  state.sel=id;
+  const sk=SKILLS[id],lv=lvl(an.raw.get(id));
+  const seen=new Set();
+  const rows=(an.ev.get(id)||[]).filter(e=>{const k=e.job+e.task+e.action;if(seen.has(k))return false;seen.add(k);return true;}).slice(0,6)
+    .map(e=>`<li><b>${esc(e.job)}</b><span>${YEARS[e.y]}</span><span>${esc(e.task)} → ${esc(e.action)}</span></li>`).join("");
+  return `<h3>${esc(sk.name)} <span class="badge">Lv${lv}</span></h3><p>${esc(sk.def)}</p><ul>${rows}</ul>`;
+}
+function cardHtml(it){
+  const stations=it.from.map(f=>`<li class="st"><span class="p"></span>${esc(f.job)}</li>`).join("");
+  const gaps=it.gaps.slice(0,5).map(g=>`<li><b>${esc(SKILLS[g.id].name)}</b><span>${esc(g.path.task)}：${esc(g.path.action)}</span></li>`).join("");
+  const rest=it.gaps.length>5?`<p class="more">ほか${it.gaps.length-5}個</p>`:"";
+  const st=it.strengths.slice(0,8).map(s=>`<span>${esc(SKILLS[s.id].name)}</span>`).join("");
+  const pct=Math.round(it.cov*100);
+  const same=it.same&&it.same.length?`<p class="grp">同じスキル構成：${esc(it.same.slice(0,6).join("、"))}${it.same.length>6?" ほか":""}</p>`:"";
+  return `<article class="path" style="--lc:var(--c${it.cat})">
+    <header><div><h4>${esc(it.name)}</h4><p class="grp">${esc(CATS[it.cat])}${it.group?" ／ "+esc(it.group):""}</p></div>
+    <div class="pct">${pct}<small>%</small></div></header>
+    <ol class="route" aria-label="経験から目標への道">${stations}<li class="st goal"><span class="p"></span><b>${esc(it.name)}</b></li></ol>
+    <div class="meter" role="img" aria-label="現在のスキルでの到達度 ${pct}%"><span style="width:${pct}%"></span></div>
+    <div class="two">
+      <div class="blk"><h5>活かせるスキル ${it.strengths.length}個</h5><div class="mini">${st||'<span>なし</span>'}</div></div>
+      <div class="blk"><h5>身につけたいスキル ${it.gaps.length}個</h5><ul class="gaps">${gaps}</ul>${rest}</div>
+    </div>${same}</article>`;
+}
+function pathsHtml(an,rec){
+  const tn=["すぐ狙える","あと一歩","中長期で目指す"],td=["今のスキルで半分以上をカバーできます","不足スキルを補えば届きます","複数のスキルを新しく積む必要があります"];
+  const filters=`<div class="filters" role="group" aria-label="目標職種の系統">`+
+    [`<button type="button" class="f" data-f="-1" aria-pressed="${state.filter===-1}">すべて</button>`].concat(
+    CATS.map((c,i)=>`<button type="button" class="f" data-f="${i}" aria-pressed="${state.filter===i}">${c}</button>`)).join("")+`</div>`;
+  let direct="";
+  if(state.target&&JOBS.has(state.target)){
+    const it=evalJob(an,state.target);
+    direct=`<div class="tier"><h3>指定した職種 <small>${esc(state.target)}までの距離</small></h3><div class="cards">${cardHtml(it)}</div></div>`;
+  }else if(state.target){
+    direct=`<p class="empty">「${esc(state.target)}」は職種マスタにありません。候補から選んでください。</p>`;
+  }
+  const tiers=rec.tiers.map((arr,k)=>{
+    if(!arr.length)return "";
+    const lim=state.open[k]?arr.length:4;
+    const shown=arr.slice(0,lim).map(cardHtml).join("");
+    const btn=arr.length>4?`<button type="button" class="btn" data-more="${k}">${state.open[k]?"閉じる":"残り"+(arr.length-4)+"件を見る"}</button>`:"";
+    return `<div class="tier"><h3>${tn[k]} <small>${td[k]}（${arr.length}件）</small></h3><div class="cards">${shown}</div>${btn}</div>`;
+  }).join("");
+  const none=!tiers&&!direct?`<p class="empty">この系統で届きそうな職種はまだ見つかりません。系統を「すべて」に戻すか、経験職種を追加してください。</p>`:"";
+  const lat=rec.lateral.length?`<p class="lateral"><b>今のスキルのまま移れそうな職種：</b>${esc(rec.lateral.slice(0,12).join("、"))}${rec.lateral.length>12?" ほか":""}</p>`:"";
+  return `<section class="panel" aria-labelledby="pt-h"><h2 id="pt-h">スキルから見たキャリアの道</h2>
+    <p class="hint">到達度は、目標職種が求めるスキルのうち、今の経験でカバーできている割合です。</p>
+    ${filters}${direct}${tiers}${none}${lat}</section>`;
+}
+function render(){
+  const an=analyze(state.rows.map(r=>({job:r.job,y:r.y})));
+  $("#exbadge").hidden=!state.example;
+  if(!an.jobs.length){
+    $("#out").innerHTML=`<div class="empty">左の欄に経験した職種を入力すると、身についたスキルとキャリアの道が表示されます。</div>`;
+    return;
+  }
+  $("#out").innerHTML=skillsHtml(an)+pathsHtml(an,recommend(an,state.filter));
+}
+function update(){refreshMeta();save();render();}
+
+document.addEventListener("DOMContentLoaded",()=>{});
+(function init(){
+  $("#jobs").innerHTML=JOBNAMES.map(n=>`<option value="${esc(n)}"></option>`).join("");
+  load();
+  $("#target").value=state.target;
+  buildRows();
+  render();
+
+  $("#rows").addEventListener("input",e=>{
+    const row=e.target.closest(".row");if(!row)return;
+    const r=state.rows[+row.dataset.i];
+    if(e.target.matches("input.job"))r.job=e.target.value.trim();
+    if(e.target.matches("select"))r.y=+e.target.value;
+    state.example=false;update();
+  });
+  $("#rows").addEventListener("click",e=>{
+    if(!e.target.matches(".del"))return;
+    const i=+e.target.closest(".row").dataset.i;
+    state.rows.splice(i,1);state.example=false;buildRows();update();
+  });
+  $("#add").addEventListener("click",()=>{
+    if(state.rows.length>=MAXJOBS)return;
+    state.rows.push({job:"",y:1});buildRows();
+    const el=$("#job"+(state.rows.length-1));if(el)el.focus();
+  });
+  $("#clear").addEventListener("click",()=>{state.rows=[{job:"",y:1}];state.example=false;state.sel=null;buildRows();update();});
+  document.querySelectorAll("[data-preset]").forEach(b=>b.addEventListener("click",()=>{setPreset(+b.dataset.preset);buildRows();update();}));
+  $("#target").addEventListener("input",e=>{state.target=e.target.value.trim();save();render();});
+  $("#out").addEventListener("click",e=>{
+    const sk=e.target.closest("[data-sk]");
+    if(sk){state.sel=sk.dataset.sk;render();return;}
+    const f=e.target.closest("[data-f]");
+    if(f){state.filter=+f.dataset.f;save();render();return;}
+    const m=e.target.closest("[data-more]");
+    if(m){state.open[m.dataset.more]=!state.open[m.dataset.more];render();}
+  });
+})();
+</script>
+</body>
+</html>
